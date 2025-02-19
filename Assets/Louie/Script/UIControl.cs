@@ -53,11 +53,11 @@ namespace Louie
             Texting.font = myFont;
             Texting.text = "현재 상태";
             Texting.fontSize = 20;
-            Texting.alignment = TextAnchor.MiddleLeft;
+            Texting.alignment = TextAnchor.MiddleCenter;
             RectTransform RtTextIng = objTexting.GetComponent<RectTransform>();
             RtTextIng.anchorMin = new Vector2(0, 1);
             RtTextIng.anchorMax = new Vector2(1, 1);
-            RtTextIng.anchoredPosition = new Vector2(0, -(RtTextIng.sizeDelta.y / 2));
+            RtTextIng.anchoredPosition = new Vector2(0, -(RtTextIng.sizeDelta.y));
             RtTextIng.offsetMin = new Vector2(0, RtTextIng.offsetMin.y);
             RtTextIng.offsetMax = new Vector2(0, RtTextIng.offsetMax.y);
             RtTextIng.pivot = new Vector2(0.5F, 0.5F);

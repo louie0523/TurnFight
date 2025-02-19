@@ -15,11 +15,25 @@ namespace Louie
         {
             for(int i = 0; i < num; i++)
             {
-                GameObject objPlayer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                int Ran = Random.Range(0, GameManager.instance.Units.Length);
+                GameObject objPlayer = GameObject.Instantiate(GameManager.instance.Units[1]);
                 objPlayer.name = "Player " + i.ToString();
                 objPlayer.tag = "Player";
-                objPlayer.AddComponent<Unit>().unitName = "P" + i;
-                objPlayer.transform.position = new Vector3(-3 + (i * 1.5f), 0, 0);
+                objPlayer.AddComponent<Unit>().unitName = "플레이어" + i;
+                objPlayer.transform.position = GameManager.instance.Postions[0].position + new Vector3((i * 2f), 0, 0);
+                
+                Unit unit = objPlayer.GetComponent<Unit>();
+                int RanStatus = Random.Range(GameManager.instance.Status.GetComponent<Status>().MinHP, GameManager.instance.Status.GetComponent<Status>().MaxHP);
+                unit.maxHp = RanStatus;
+                RanStatus = Random.Range(GameManager.instance.Status.GetComponent<Status>().MinattackDmg, GameManager.instance.Status.GetComponent<Status>().MaxattackDmg);
+                unit.attackDmg = RanStatus;
+                RanStatus = Random.Range(GameManager.instance.Status.GetComponent<Status>().MinskillDmg, GameManager.instance.Status.GetComponent<Status>().MaxskillDmg);
+                unit.skillDmg = RanStatus;
+                RanStatus = Random.Range(GameManager.instance.Status.GetComponent<Status>().Minspeed, GameManager.instance.Status.GetComponent<Status>().Maxspeed);
+                unit.speed= RanStatus;
+
+                unit.currentHp = unit.maxHp;
+
             }
         }
     }

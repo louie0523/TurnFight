@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Louie
 {
@@ -183,9 +184,10 @@ namespace Louie
         public void SelectTartget(Unit unit)
         {
             selectedTarget = unit;
-            PlayerTurn(unit);
+            StartCoroutine("PlayerAttack");
         }
 
+        
         public void EndTurn()
         {
             ProcessTurn();
@@ -199,6 +201,43 @@ namespace Louie
                 turnOrder.Add(unit.unitName);
             }
             uIControl.SetTextTurnOrder("현재 턴 : " + string.Join(" -> ", turnOrder));
+        }
+
+        IEnumerator PlayerAttack()
+        {
+            
+            uIControl.SetTexting(currentPlayerUnit.unitName + "가" + selectedTarget.unitName + "를 공격!");
+            currentPlayerUnit.AttackAni();
+            yield return new WaitForSeconds(0.3f);
+            bool isDead = selectedTarget.Damage(currentPlayerUnit.attackDmg);
+
+            yield return new WaitForSeconds(0.7f);
+
+            if(isDead)
+            {
+                uIControl.SetTexting(selectedTarget.unitName + "가 사망!");
+            }
+
+            ProcessTurn();
+        }
+
+        private void Update()
+        {
+            if(isTargeting)
+            {
+                if(Input.GetMouseButtonDown(0))
+                {
+                    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+
+                    if(Physics.Raycast(ray,out hit))
+                    {
+                        // Ray가 충돌한 오브젝트 출력
+                        // Debug.Log("클릭한오브젝트: " + hit.collider.gameobject.name);
+                        SelectTartget(hit.collider.GetComponent<Unit>());
+                    }
+                }
+            }
         }
     }
 }

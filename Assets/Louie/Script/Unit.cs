@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
 
 namespace Louie
 {
@@ -31,9 +34,39 @@ namespace Louie
         /// </summary>
         public int speed;
 
+        Animator animator;
+
+
+        public TextMeshPro HPText;
+        
         private void Start()
         {
             currentHp = maxHp;
+            animator = this.GetComponent<Animator>();
+            HPText = transform.Find("체력텍스트").GetComponent<TextMeshPro>();
+        }
+
+        private void Update()
+        {
+            HpTextUpdate();
+        }
+
+
+        void HpTextUpdate()
+        {
+            HPText.text = "HP : " + currentHp + "/" + maxHp;
+        }
+
+        public void AttackAni()
+        {
+            animator.SetBool("isAttack", true);
+            StartCoroutine(Wait());
+            animator.SetBool("isAttack", false);
+        }
+
+        IEnumerator Wait()
+        {
+            yield return new WaitForSeconds(0.5f);
         }
 
         public bool Damage(int damage)
@@ -43,6 +76,7 @@ namespace Louie
             {
                 currentHp = 0;
                 return true;
+                animator.SetTrigger("Death");
             }
             return false;   
         }
