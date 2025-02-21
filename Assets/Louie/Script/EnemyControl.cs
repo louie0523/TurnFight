@@ -16,7 +16,7 @@ namespace Louie
             for (int i = 0; i < num; i++)
             {
                 int Ran = Random.Range(0, GameManager.instance.Units.Length);
-                GameObject objEnemy = GameObject.Instantiate(GameManager.instance.Units[0]);
+                GameObject objEnemy = GameObject.Instantiate(GameManager.instance.Units[1]);
                 objEnemy.name = "Enemy " + i.ToString();
                 objEnemy.tag = "Enemy";
                 objEnemy.AddComponent<Unit>().unitName = "±øÆÐ" + i;

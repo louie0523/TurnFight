@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Properties;
 
 
 namespace Louie
@@ -36,19 +37,37 @@ namespace Louie
 
         Animator animator;
 
+        public GameObject TartGetObj;
+        public bool isAttack = false;
+        public bool isBack = false;
+
 
         public TextMeshPro HPText;
-        
+
+        GameObject MyPostion;
         private void Start()
         {
             currentHp = maxHp;
             animator = this.GetComponent<Animator>();
             HPText = transform.Find("체력텍스트").GetComponent<TextMeshPro>();
+            MyPostion = new GameObject(gameObject.name + "Postion");
+            MyPostion.transform.position = this.transform.position;
+            MyPostion.transform.rotation = this.transform.rotation;
+            
         }
 
         private void Update()
         {
             HpTextUpdate();
+            if(TartGetObj != null)
+            {
+                Move();
+                Rotation();
+            }
+            if(isBack)
+            {
+                BackWalk();
+            }
         }
 
 
@@ -57,26 +76,60 @@ namespace Louie
             HPText.text = "HP : " + currentHp + "/" + maxHp;
         }
 
-        public void AttackAni()
+        public void SelectTarGet(GameObject Enemy)
         {
-            animator.SetBool("isAttack", true);
-            StartCoroutine(Wait());
-            animator.SetBool("isAttack", false);
+            TartGetObj = Enemy;
+            isAttack = true;
         }
 
-        IEnumerator Wait()
+        void Move()
         {
-            yield return new WaitForSeconds(0.5f);
+            if(Vector3.Distance(TartGetObj.transform.position, this.transform.position) > 1.5f && TartGetObj != null)
+            {
+                this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
+            } else
+            {
+                AttackAni();
+            }
+        }
+
+        void Rotation()
+        {
+            this.transform.LookAt(TartGetObj.transform.position + new Vector3(0, 1, 0));
+        }
+
+        void AttackAni()
+        {
+            if(isAttack)
+            {
+                animator.SetTrigger("Attack");
+                TartGetObj = null;
+                isAttack = false;
+                isBack = true;
+            }
+        }
+
+        void BackWalk()
+        {
+            if(Vector3.Distance(this.transform.position, MyPostion.transform.position) > 0.5f)
+            {
+                this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
+            } else
+            {
+                this.transform.position = MyPostion.transform.position;
+                this.transform.rotation = MyPostion.transform.rotation;
+                isBack = false;
+            }
         }
 
         public bool Damage(int damage)
         {
             currentHp -= damage;
-            if(currentHp <= maxHp)
+            if(currentHp <= 0)
             {
                 currentHp = 0;
-                return true;
                 animator.SetTrigger("Death");
+                return true;
             }
             return false;   
         }

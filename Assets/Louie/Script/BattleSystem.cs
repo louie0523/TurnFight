@@ -207,8 +207,9 @@ namespace Louie
         {
             
             uIControl.SetTexting(currentPlayerUnit.unitName + "가" + selectedTarget.unitName + "를 공격!");
-            currentPlayerUnit.AttackAni();
-            yield return new WaitForSeconds(0.3f);
+            Debug.Log(currentPlayerUnit.attackDmg);
+            currentPlayerUnit.SelectTarGet(selectedTarget.gameObject);
+            yield return new WaitUntil(() => !currentPlayerUnit.isAttack);    
             bool isDead = selectedTarget.Damage(currentPlayerUnit.attackDmg);
 
             yield return new WaitForSeconds(0.7f);
