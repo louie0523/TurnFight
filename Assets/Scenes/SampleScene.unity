@@ -378,8 +378,8 @@ MonoBehaviour:
   playerNum: 4
   enemyNum: 4
   Units:
-  - {fileID: 7820359639940561710, guid: b35961fb95fc00044ba9d922f6c07a57, type: 3}
   - {fileID: 9050718259312893417, guid: 5436d900aff8ba1448e7c98d43113163, type: 3}
+  - {fileID: 7820359639940561710, guid: b35961fb95fc00044ba9d922f6c07a57, type: 3}
   Postions:
   - {fileID: 443528680}
   - {fileID: 2001770963}

@@ -50,6 +50,10 @@ namespace Louie
             currentHp = maxHp;
             animator = this.GetComponent<Animator>();
             HPText = transform.Find("체력텍스트").GetComponent<TextMeshPro>();
+            if(this.gameObject.tag == "Player")
+            {
+                this.transform.rotation = Quaternion.Euler(0, -180, 0);
+            }
             MyPostion = new GameObject(gameObject.name + "Postion");
             MyPostion.transform.position = this.transform.position;
             MyPostion.transform.rotation = this.transform.rotation;
@@ -86,7 +90,13 @@ namespace Louie
         {
             if(Vector3.Distance(TartGetObj.transform.position, this.transform.position) > 1.5f && TartGetObj != null)
             {
-                this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
+                if (this.gameObject.tag == "Player")
+                {
+                    this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
+                } else
+                {
+                    this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
+                }
             } else
             {
                 AttackAni();
@@ -113,7 +123,14 @@ namespace Louie
         {
             if(Vector3.Distance(this.transform.position, MyPostion.transform.position) > 0.5f)
             {
-                this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
+                if (this.gameObject.tag == "Player")
+                {
+                    this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
+                }
+                else
+                {
+                    this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
+                }
             } else
             {
                 this.transform.position = MyPostion.transform.position;
