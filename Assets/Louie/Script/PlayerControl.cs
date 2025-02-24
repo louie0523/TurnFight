@@ -19,7 +19,7 @@ namespace Louie
                 GameObject objPlayer = GameObject.Instantiate(GameManager.instance.Units[0]);
                 objPlayer.name = "Player " + i.ToString();
                 objPlayer.tag = "Player";
-                objPlayer.AddComponent<Unit>().unitName = "플레이어" + i;
+                objPlayer.AddComponent<Unit>().unitName = "Player " + i;
                 objPlayer.transform.position = GameManager.instance.Postions[0].position + new Vector3((i * 2f), 0, 0);
                 
                 Unit unit = objPlayer.GetComponent<Unit>();

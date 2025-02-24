@@ -35,11 +35,12 @@ namespace Louie
         /// </summary>
         public int speed;
 
+        public bool isDead = false;
+
         Animator animator;
 
         public GameObject TartGetObj;
         public bool isAttack = false;
-        public bool isBack = false;
 
 
         public TextMeshPro HPText;
@@ -54,24 +55,12 @@ namespace Louie
             {
                 this.transform.rotation = Quaternion.Euler(0, -180, 0);
             }
-            MyPostion = new GameObject(gameObject.name + "Postion");
-            MyPostion.transform.position = this.transform.position;
-            MyPostion.transform.rotation = this.transform.rotation;
             
         }
 
         private void Update()
         {
             HpTextUpdate();
-            if(TartGetObj != null)
-            {
-                Move();
-                Rotation();
-            }
-            if(isBack)
-            {
-                BackWalk();
-            }
         }
 
 
@@ -84,60 +73,27 @@ namespace Louie
         {
             TartGetObj = Enemy;
             isAttack = true;
+            AttackAni();
         }
 
-        void Move()
-        {
-            if(Vector3.Distance(TartGetObj.transform.position, this.transform.position) > 1.5f && TartGetObj != null)
-            {
-                if (this.gameObject.tag == "Player")
-                {
-                    this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
-                } else
-                {
-                    this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
-                }
-            } else
-            {
-                AttackAni();
-            }
-        }
 
-        void Rotation()
+        IEnumerator Wait(float time)
         {
-            this.transform.LookAt(TartGetObj.transform.position + new Vector3(0, 1, 0));
+            yield return new WaitForSeconds(time);
         }
 
         void AttackAni()
         {
             if(isAttack)
             {
+                this.transform.LookAt(TartGetObj.transform.position + new Vector3(0, 1, 0));
+                StartCoroutine(Wait(0.3f));
                 animator.SetTrigger("Attack");
                 TartGetObj = null;
                 isAttack = false;
-                isBack = true;
             }
         }
 
-        void BackWalk()
-        {
-            if(Vector3.Distance(this.transform.position, MyPostion.transform.position) > 0.5f)
-            {
-                if (this.gameObject.tag == "Player")
-                {
-                    this.transform.Translate(this.transform.forward * 2f * Time.deltaTime);
-                }
-                else
-                {
-                    this.transform.Translate(-this.transform.forward * 2f * Time.deltaTime);
-                }
-            } else
-            {
-                this.transform.position = MyPostion.transform.position;
-                this.transform.rotation = MyPostion.transform.rotation;
-                isBack = false;
-            }
-        }
 
         public bool Damage(int damage)
         {
@@ -145,7 +101,6 @@ namespace Louie
             if(currentHp <= 0)
             {
                 currentHp = 0;
-                animator.SetTrigger("Death");
                 return true;
             }
             return false;   

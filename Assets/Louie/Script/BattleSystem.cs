@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 namespace Louie
 {
@@ -14,11 +15,11 @@ namespace Louie
         /// <summary>
         /// 플레이어의 유닛들
         /// </summary>
-        private List<Unit> players = new List<Unit>();
+        public List<Unit> players = new List<Unit>();
         /// <summary>
         /// 적의 유닛들
         /// </summary>
-        private List<Unit> enemys = new List<Unit>();
+        public List<Unit> enemys = new List<Unit>();
         /// <summary>
         ///  모든 유닛들
         /// </summary>
@@ -85,6 +86,8 @@ namespace Louie
                 Debug.LogError("Enemy가 존재 하지 않습니다.");
             }
 
+            uIControl.CreatCanvas();
+            uIControl.CreatHPUI();
             uIControl.SetTexting("야생의 몬스터들과 마주쳤다.");
 
             yield return new WaitForSeconds(1.0f);
@@ -165,10 +168,22 @@ namespace Louie
         IEnumerator EnemyTurn(Unit unit)
         {
             uIControl.SetTexting(unit.unitName + "의 턴");
-
             yield return new WaitForSeconds(1.0f);
 
             Unit target = players[Random.Range(0, players.Count)].GetComponent<Unit>();
+            int Count = 0;
+            while(target.isDead)
+            {
+                target = players[Random.Range(0, players.Count)].GetComponent<Unit>();
+                Count++;
+                if(Count > 100)
+                {
+                    Debug.LogError("100번이상 반복할 만큼 문제가 생김");
+                    break;
+                }
+            }
+            unit.SelectTarGet(target.gameObject);
+            yield return new WaitUntil(() => !unit.isAttack);
             bool isDead = target.Damage(unit.attackDmg);
 
            uIControl.SetTexting(unit.unitName + "가" + target.unitName + "를 공격");
@@ -177,8 +192,20 @@ namespace Louie
             if(isDead)
             {
                 uIControl.SetTexting(target.unitName + "가 사망!");
+                target.isDead = true;
+                target.GetComponent<BoxCollider>().enabled = false;
+                target.GetComponent<Animator>().SetTrigger("Death");
+                RemoveDeadUnitFromQueue();
             }
-            ProcessTurn();
+            uIControl.SetPlayerHP(target);
+            if (!players.Exists(x => !x.isDead))
+            {
+                uIControl.SetTexting("적이 승리하였습니다.");
+            }
+            else
+            {
+                ProcessTurn();
+            }
         }
 
         public void SelectTartget(Unit unit)
@@ -198,7 +225,10 @@ namespace Louie
             List<string> turnOrder = new List<string>();
             foreach (Unit unit in turnQueue)
             {
-                turnOrder.Add(unit.unitName);
+                if (!unit.isDead)
+                {
+                    turnOrder.Add(unit.unitName);
+                }
             }
             uIControl.SetTextTurnOrder("현재 턴 : " + string.Join(" -> ", turnOrder));
         }
@@ -217,9 +247,35 @@ namespace Louie
             if(isDead)
             {
                 uIControl.SetTexting(selectedTarget.unitName + "가 사망!");
+
+                selectedTarget.isDead = true;
+                selectedTarget.GetComponent<BoxCollider>().enabled = false;
+                selectedTarget.GetComponent<Animator>().SetTrigger("Death");
+                RemoveDeadUnitFromQueue();
+            }
+            uIControl.SetEnemyHP(selectedTarget);
+            if (!enemys.Exists(x => !x.isDead))
+            {
+                uIControl.SetTexting("플레이어가 승리하였습니다.");
+            } else
+            {
+                ProcessTurn();
             }
 
-            ProcessTurn();
+        }
+
+        void RemoveDeadUnitFromQueue()
+        {
+            Queue<Unit> queue = new Queue<Unit>();
+            foreach( Unit unit in turnQueue)
+            {
+                if (!unit.isDead)
+                {
+                    queue.Enqueue(unit);
+                }
+            }
+
+            turnQueue = queue;
         }
 
         private void Update()
@@ -235,7 +291,10 @@ namespace Louie
                     {
                         // Ray가 충돌한 오브젝트 출력
                         // Debug.Log("클릭한오브젝트: " + hit.collider.gameobject.name);
-                        SelectTartget(hit.collider.GetComponent<Unit>());
+                        if(hit.transform.CompareTag("Enemy"))
+                        {
+                            SelectTartget(hit.collider.GetComponent<Unit>());
+                        }
                     }
                 }
             }
