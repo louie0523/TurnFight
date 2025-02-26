@@ -6,10 +6,7 @@ namespace Louie
 {
     public class PlayerControl : MonoBehaviour
     {
-        private void Start()
-        {
-             
-        }
+
 
         public void CreatPlayers(int num)
         {

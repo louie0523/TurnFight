@@ -28,6 +28,7 @@ namespace Louie
         public List<Slider> sliderPlayer = new List<Slider>();
         public List<Slider> sliderEnemy = new List<Slider>();
 
+
         private void Start()
         {
             battleSystem = GameObject.Find("BattleSystem").GetComponent<BattleSystem>();
@@ -167,6 +168,11 @@ namespace Louie
             EnemyUI.AddComponent<VerticalLayoutGroup>().childControlHeight = false;
 
             GameObject HPPrefab = Resources.Load<GameObject>("Prefabs/HP");
+
+            if(battleSystem == null)
+            {
+                battleSystem = GameObject.Find("BattleSystem").GetComponent<BattleSystem>();
+            }
 
             for(int i = 0; i < battleSystem.players.Count; i++)
             {

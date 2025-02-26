@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
@@ -27,7 +28,7 @@ namespace Louie
         /// <summary>
         /// 유닛들의 순번 지정
         /// </summary>
-        private Queue<Unit> turnQueue;
+        private List<Unit> turnQueue;
         /// <summary>
         /// 유닛들의 행동 저장
         /// </summary>
@@ -49,16 +50,13 @@ namespace Louie
         /// </summary>
         public bool isTargeting = false;
 
+        //public Transform CamTransfom;
+
         private void Awake()
         {
             uIControl = GameObject.Find("UIControl").GetComponent<UIControl>();
         }
 
-        private void Start()
-        {
-            status = BattleStatus.Start;
-            Invoke("StartBattle", 2.0f);
-        }
 
         public void StartBattle()
         {
@@ -67,6 +65,11 @@ namespace Louie
 
         IEnumerator SetBattle()
         {
+            //GameManager.instance.Battling = true;
+            //Camera cam = Camera.main;
+            //CamTransfom = cam.transform;
+            //cam.transform.position = new Vector3(-2f, 6f, 0);
+            //cam.transform.rotation = Quaternion.Euler(50f, 90f, 0);
             foreach (GameObject obj in GameObject.FindGameObjectsWithTag("Player"))
             {
                 players.Add(obj.GetComponent<Unit>());
@@ -100,54 +103,63 @@ namespace Louie
 
         void SetTurnQueue()
         {
-            turnQueue = new Queue<Unit>();
-            unitActions = new Dictionary<Unit, int>();
+            turnQueue = new List<Unit>(units);
+            SortTurnQueueBySpeed();
+            //unitActions = new Dictionary<Unit, int>();
 
-            foreach(Unit unit in units)
-            {
-                ADDUnitToQueue(unit);
-            }
+            //foreach(Unit unit in units)
+            //{
+            //    ADDUnitToQueue(unit);
+            //}
+        }
+
+
+        void SortTurnQueueBySpeed()
+        {
+            turnQueue = turnQueue.Where(units => ! units.isDead).OrderByDescending(units => units.speed).ToList();
         }
         /// <summary>
         /// 각 유닛의 속도 값을 상대유닛의 속도로 나누어 행동한다.
         /// (속도가 많이차이나는 유닛이 한턴에 여러번 공격가능)
         /// </summary>
         /// <param name="unit"></param>
-        void ADDUnitToQueue(Unit unit)
-        {
-            int actions = Mathf.Max(1, unit.speed / GetFastestSpeed());
-            unitActions[unit] = actions;
-            for(int i = 0; i < actions; i++)
-            {
-                turnQueue.Enqueue(unit);
-            }
-        }
-        /// <summary>
-        /// 가장 빠른 속도를 가진 Unit 속도를 받아온다.
-        /// </summary>
-        /// <returns></returns>
-        int GetFastestSpeed()
-        {
-            int maxSpeed = 1;
-            foreach(Unit unit in units)
-            {
-                if(unit.speed > maxSpeed)
-                    maxSpeed = unit.speed;
-            }
-            return maxSpeed;
-        }
+        //void ADDUnitToQueue(Unit unit)
+        //{
+        //    int actions = Mathf.Max(1, unit.speed / GetFastestSpeed());
+        //    unitActions[unit] = actions;
+        //    for(int i = 0; i < actions; i++)
+        //    {
+        //        turnQueue.Enqueue(unit);
+        //    }
+        //}
+        ///// <summary>
+        ///// 가장 빠른 속도를 가진 Unit 속도를 받아온다.
+        ///// </summary>
+        ///// <returns></returns>
+        //int GetFastestSpeed()
+        //{
+        //    int maxSpeed = 1;
+        //    foreach(Unit unit in units)
+        //    {
+        //        if(unit.speed > maxSpeed)
+        //            maxSpeed = unit.speed;
+        //    }
+        //    return maxSpeed;
+        //}
         /// <summary>
         /// 턴 넘김
         /// </summary>
         void ProcessTurn()
         {
+            SortTurnQueueBySpeed();
             if(turnQueue.Count == 0)
             {
                 SetTurnQueue();
             }
             SetTurnUI();
-            currentPlayerUnit = turnQueue.Dequeue();
-
+            //currentPlayerUnit = turnQueue.Dequeue();
+            currentPlayerUnit = turnQueue[0];
+            turnQueue.RemoveAt(0);
             // 플레이어들에서 람다식을 통해 현재유닛이 있는지 확인한다.
             if(players.Exists(p => p.GetComponent<Unit>() == currentPlayerUnit))
             {
@@ -195,12 +207,15 @@ namespace Louie
                 target.isDead = true;
                 target.GetComponent<BoxCollider>().enabled = false;
                 target.GetComponent<Animator>().SetTrigger("Death");
-                RemoveDeadUnitFromQueue();
+                turnQueue.RemoveAll(unit => unit.isDead);
+                //RemoveDeadUnitFromQueue();
             }
             uIControl.SetPlayerHP(target);
             if (!players.Exists(x => !x.isDead))
             {
                 uIControl.SetTexting("적이 승리하였습니다.");
+                yield return new WaitForSeconds(3f);
+                GameManager.instance.Battling = false;
             }
             else
             {
@@ -251,12 +266,15 @@ namespace Louie
                 selectedTarget.isDead = true;
                 selectedTarget.GetComponent<BoxCollider>().enabled = false;
                 selectedTarget.GetComponent<Animator>().SetTrigger("Death");
-                RemoveDeadUnitFromQueue();
+                turnQueue.RemoveAll(unit => unit.isDead);
+                //RemoveDeadUnitFromQueue();
             }
             uIControl.SetEnemyHP(selectedTarget);
             if (!enemys.Exists(x => !x.isDead))
             {
                 uIControl.SetTexting("플레이어가 승리하였습니다.");
+                yield return new WaitForSeconds(3f);
+                GameManager.instance.Battling = false;
             } else
             {
                 ProcessTurn();
@@ -264,19 +282,19 @@ namespace Louie
 
         }
 
-        void RemoveDeadUnitFromQueue()
-        {
-            Queue<Unit> queue = new Queue<Unit>();
-            foreach( Unit unit in turnQueue)
-            {
-                if (!unit.isDead)
-                {
-                    queue.Enqueue(unit);
-                }
-            }
+        //void RemoveDeadUnitFromQueue()
+        //{
+        //    Queue<Unit> queue = new Queue<Unit>();
+        //    foreach( Unit unit in turnQueue)
+        //    {
+        //        if (!unit.isDead)
+        //        {
+        //            queue.Enqueue(unit);
+        //        }
+        //    }
 
-            turnQueue = queue;
-        }
+        //    turnQueue = queue;
+        //}
 
         private void Update()
         {
@@ -298,6 +316,11 @@ namespace Louie
                     }
                 }
             }
+        }
+
+        void BattelEnd()
+        {
+            Debug.Log("전투가 종료되었습니다.");
         }
     }
 }

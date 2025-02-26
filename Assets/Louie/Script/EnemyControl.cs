@@ -6,10 +6,6 @@ namespace Louie
 {
     public class EnemyControl : MonoBehaviour
     {
-        private void Start()
-        {
-
-        }
 
         public void CreatEnemy(int num)
         {

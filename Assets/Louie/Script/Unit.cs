@@ -53,7 +53,7 @@ namespace Louie
             HPText = transform.Find("체력텍스트").GetComponent<TextMeshPro>();
             if(this.gameObject.tag == "Player")
             {
-                this.transform.rotation = Quaternion.Euler(0, -180, 0);
+                this.transform.rotation = Quaternion.Euler(0, -180f, 0);
             }
             
         }

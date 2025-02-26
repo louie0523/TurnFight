@@ -14,6 +14,7 @@ namespace Louie
             {
                 instance = this;
                 DontDestroyOnLoad(gameObject);
+                Invoke("StartBattleSetting", 5f);
             } else
             {
                 Destroy(gameObject);
@@ -42,8 +43,10 @@ namespace Louie
         public GameObject[] Units;
         public Transform[] Postions;
         public GameObject Status;
+        public bool Battling = false;
 
-        private void Start()
+
+        public void StartBattleSetting()
         {
             GameObject objUIControl = new GameObject("UIControl");
             uIControl = objUIControl.AddComponent<UIControl>();
@@ -59,9 +62,8 @@ namespace Louie
             GameObject objBattleSystem = new GameObject("BattleSystem");
             battleSystem = objBattleSystem.AddComponent<BattleSystem>();
 
-            //battleSystem.StartBattle();
+            battleSystem.StartBattle();
         }
-
         
     }
 }
